@@ -78,18 +78,19 @@ class App extends React.Component {
       this.setState({ isLoading: false });
     }
   }
+
+  //////////////////////////////////////////////////
+  setLocation = (e) => this.setState({ location: e.target.value });
   render() {
     return (
       <div className="app">
         <h1>Weather App</h1>
-        <div>
-          <input
-            type="text"
-            placeholder="Search here"
-            value={this.state.location}
-            onChange={(e) => this.setState({ location: e.target.value })}
-          />
-        </div>
+        {/* This component  is parent of Input class component */}
+        <Input
+          location={this.state.location}
+          onChangeLocation={this.setLocation}
+        />
+
         <button onClick={this.fetchWeather}>Get Weather</button>
         {this.state.isLoading && <p>Loading...</p>}
         {this.state.weather.weathercode && (
@@ -104,7 +105,23 @@ class App extends React.Component {
 }
 
 export default App;
-
+////////////////////////////////////////////
+////  This is child component of Input
+class Input extends React.Component {
+  render() {
+    return (
+      <div>
+        <input
+          type="text"
+          placeholder="Search here"
+          value={this.props.location}
+          onChange={this.props.onChangeLocation}
+        />
+      </div>
+    );
+  }
+}
+//////////////////////////////////////////////////
 class Weather extends React.Component {
   render() {
     const {
@@ -132,7 +149,7 @@ class Weather extends React.Component {
     );
   }
 }
-
+//////////////////////////////////////////////////
 class Day extends React.Component {
   render() {
     const { date, max, min, code, isToday } = this.props;
