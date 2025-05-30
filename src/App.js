@@ -37,7 +37,7 @@ class App extends React.Component {
     super(props);
     // This is how we create state in javascript's class component.
     this.state = {
-      location: "ktm",
+      location: "",
       isLoading: false,
       displayLocation: "",
       weather: {},
@@ -48,6 +48,9 @@ class App extends React.Component {
   ////////////////////////////////////////////////////////
   //fetching weather data from weather API( open-meteo.com).
   async fetchWeather() {
+    //if the search input's lenght is less than 2 then simply ruturn the function and make weather empty object.
+    if (this.state.location.length < 2) return this.setState({ weather: {} });
+
     try {
       this.setState({ isLoading: true });
       // 1) Getting location (geocoding)
@@ -73,7 +76,7 @@ class App extends React.Component {
       console.log(weatherData);
       this.setState({ weather: weatherData.daily });
     } catch (err) {
-      console.err(err);
+      console.error(err);
     } finally {
       this.setState({ isLoading: false });
     }
@@ -81,6 +84,21 @@ class App extends React.Component {
 
   //////////////////////////////////////////////////
   setLocation = (e) => this.setState({ location: e.target.value });
+
+  // Lifecycle methods
+  // componentDidmount is almost similar to useffect hook's empty dependency arry
+  // useEffect []
+  // runs on initial render
+  componentDidMount() {
+    this.setState({ location: localStorage.getItem("location") || "" });
+  }
+  // close to useEffect hook's useEffect [location] runs on re-render
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.location !== prevState.location) {
+      this.fetchWeather();
+      localStorage.setItem("location", this.state.location);
+    }
+  }
   render() {
     return (
       <div className="app">
@@ -91,7 +109,6 @@ class App extends React.Component {
           onChangeLocation={this.setLocation}
         />
 
-        <button onClick={this.fetchWeather}>Get Weather</button>
         {this.state.isLoading && <p>Loading...</p>}
         {this.state.weather.weathercode && (
           <Weather
@@ -123,6 +140,11 @@ class Input extends React.Component {
 }
 //////////////////////////////////////////////////
 class Weather extends React.Component {
+  ////////////////////////
+  // almost similar to useEffect's cleanup funtion and runs after the component is destroyed.
+  componentWillUnmount() {
+    console.log("weather will unmount");
+  }
   render() {
     const {
       temperature_2m_max: max,
@@ -132,7 +154,7 @@ class Weather extends React.Component {
     } = this.props.weather;
     return (
       <div>
-        <h2>Weather{this.props.location}</h2>
+        <h2>Weather {this.props.location}</h2>
         <ul className="weather">
           {dates.map((date, i) => (
             <Day
